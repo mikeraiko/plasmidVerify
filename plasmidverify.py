@@ -143,17 +143,17 @@ def main():
     print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
 
     print ("Gene prediction...")
-    res = os.system ("prodigal -p meta -i " + args.f + " -a "+name+"_proteins.fa -o "+name+"_genes.fa 2>"+name+"_prodigal.log" )
-    if res != 0:
-        print ("Prodigal run failed")
-        exit(1)    
+#    res = os.system ("prodigal -p meta -i " + args.f + " -a "+name+"_proteins.fa -o "+name+"_genes.fa 2>"+name+"_prodigal.log" )
+#    if res != 0:
+#        print ("Prodigal run failed")
+#        exit(1)    
 
     print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')) 
     print ("HMM domains prediction...")
-    res = os.system ("hmmsearch  --noali --cut_nc  -o "+name+"_out_pfam --domtblout "+name+"_domtblout --cpu "+ threads + " " + hmm + " "+name+"_proteins.fa")
-    if res != 0:
-        print ("hmmsearch run failed")
-        exit(2)    
+#    res = os.system ("hmmsearch  --noali --cut_nc  -o "+name+"_out_pfam --domtblout "+name+"_domtblout --cpu "+ threads + " " + hmm + " "+name+"_proteins.fa")
+#    if res != 0:
+#        print ("hmmsearch run failed")
+#        exit(2)    
     print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')) 
    
     print ("Parsing...")
@@ -191,7 +191,7 @@ def main():
         print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')) 
         print ("Running BLAST...")
     
-        os.system ("blastn  -query " + args.f + " -db " + blastdb + " -evalue 0.0001 -outfmt 5 -out "+name+".xml -num_threads "+threads+" -num_alignments 50")
+        #os.system ("blastn  -query " + args.f + " -db " + blastdb + " -evalue 0.0001 -outfmt 5 -out "+name+".xml -num_threads "+threads+" -num_alignments 50")
         print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')) 
         print ("Parsing BLAST")
         parser(name+".xml", outdir)
@@ -200,11 +200,11 @@ def main():
     
         #### add blast results
         plasmids= [line.strip().split("\t") for line in open(name + "_plasmid.names")]
-    
         plasmids_list={}
         for i in range(0, len(plasmids)-1):
           if len(plasmids[i])==1:
-            plasmids_list[plasmids[i][0]] = [float(plasmids[i+1][1].split(":")[1]), float(plasmids[i+1][2].split(":")[1]), plasmids[i+1][0]]
+            plasmids_list[plasmids[i][0].split()[0]] = [float(plasmids[i+1][1].split(":")[1]), float(plasmids[i+1][2].split(":")[1]), plasmids[i+1][0]]
+
     
         chrom= [line.rstrip().split("\t") for line in open(name + "_chromosome.names")]
         chrom_list={}
@@ -227,19 +227,20 @@ def main():
         nos_list = [i.strip() for i in nos_list]
     
     
-        amb= [line.rstrip() for line in open(name + "_ambiguous.names")]
-        amb_list=[]
-        for i in amb:
-           if i in ids:
-            amb_list.append(i)
-        amb_list = [i.strip() for i in amb_list] 
+        other= [line.rstrip() for line in open(name + "_other.names")]
+        other_list=[]
+        for i in other:
+          if len(i.split())>0:
+            other_list.append(i.split()[0])
+        other_list = [i.strip().split()[0] for i in other_list]
     
 
-    
     final_table=[]
     if args.db:
+     final_table.append(["Contig name", "Prediction", "Log-likelihood ratio", "Predicted HMMs", "Blast prediction", "Identity", "Query coverage", "Top hit"]) 
      for i in ids:
-       if i in names_result:
+        if i in names_result:
+            print(i)
             if i in plasmids_list:
               final_table.append([i, names_result[i][0],names_result[i][1], names_result[i][2], "Plasmid", plasmids_list[i][0], plasmids_list[i][1],plasmids_list[i][2]])
             if i in chrom_list:
@@ -248,13 +249,14 @@ def main():
               final_table.append([i, names_result[i][0],names_result[i][1], names_result[i][2], "Virus", vir_list[i][0], vir_list[i][1],vir_list[i][2]])
             if i in nos_list:
               final_table.append([i, names_result[i][0],names_result[i][1], names_result[i][2], "Non-significant"])
-            if i in amb:
-              final_table.append([i, names_result[i][0],names_result[i][1], names_result[i][2], "Ambiguous"])
+            if i in other:
+              final_table.append([i, names_result[i][0],names_result[i][1], names_result[i][2], "Other", other_list[i][0], other_list[i][1],other_list[i][2]])
     
-       else:
-            final_table.append([i, "Chromosome", "--"])
+        else:
+              final_table.append([i, "No hits", "--"])
     
     else:
+     final_table.append(["Contig name", "Prediction", "Log-likelihood ratio", "Predicted HMMs"]) 
      for i in ids: 
       if i in names_result:
        final_table.append([i, names_result[i][0],names_result[i][1], names_result[i][2]])
