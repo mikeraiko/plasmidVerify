@@ -143,17 +143,17 @@ def main():
     print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
 
     print ("Gene prediction...")
-#    res = os.system ("prodigal -p meta -i " + args.f + " -a "+name+"_proteins.fa -o "+name+"_genes.fa 2>"+name+"_prodigal.log" )
-#    if res != 0:
-#        print ("Prodigal run failed")
-#        exit(1)    
+    res = os.system ("prodigal -p meta -i " + args.f + " -a "+name+"_proteins.fa -o "+name+"_genes.fa 2>"+name+"_prodigal.log" )
+    if res != 0:
+        print ("Prodigal run failed")
+        exit(1)    
 
     print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')) 
     print ("HMM domains prediction...")
-#    res = os.system ("hmmsearch  --noali --cut_nc  -o "+name+"_out_pfam --domtblout "+name+"_domtblout --cpu "+ threads + " " + hmm + " "+name+"_proteins.fa")
-#    if res != 0:
-#        print ("hmmsearch run failed")
-#        exit(2)    
+    res = os.system ("hmmsearch  --noali --cut_nc  -o "+name+"_out_pfam --domtblout "+name+"_domtblout --cpu "+ threads + " " + hmm + " "+name+"_proteins.fa")
+    if res != 0:
+        print ("hmmsearch run failed")
+        exit(2)    
     print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')) 
    
     print ("Parsing...")
@@ -191,7 +191,7 @@ def main():
         print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')) 
         print ("Running BLAST...")
     
-        #os.system ("blastn  -query " + args.f + " -db " + blastdb + " -evalue 0.0001 -outfmt 5 -out "+name+".xml -num_threads "+threads+" -num_alignments 50")
+        os.system ("blastn  -query " + args.f + " -db " + blastdb + " -evalue 0.0001 -outfmt 5 -out "+name+".xml -num_threads "+threads+" -num_alignments 50")
         print (datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')) 
         print ("Parsing BLAST")
         parser(name+".xml", outdir)
